@@ -1,0 +1,134 @@
+import type { Session } from '@supabase/supabase-js';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { signUpUser } from '../lib/api';
+import { centerEmail } from '../lib/config';
+import { supabase } from '../lib/supabase';
+import { Profile, Role, ROLE_LABEL } from '../lib/types';
+
+interface AuthContextValue {
+  session: Session | null;
+  profile: Profile | null;
+  loading: boolean;
+  signIn: (role: Role, email: string, password: string) => Promise<void>;
+  /** Center/invigilator login: code + password (mapped to a hidden email). */
+  signInCenter: (code: string, password: string) => Promise<void>;
+  /** Creates the account (pre-confirmed, no email) and signs straight in. */
+  signUp: (role: Role, fullName: string, email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (!data.session) setLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      if (!newSession) {
+        setProfile(null);
+        setLoading(false);
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const userId = session?.user.id;
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (!cancelled) {
+        setProfile((data as Profile | null) ?? null);
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const signIn = useCallback(async (role: Role, email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) throw new Error(error.message);
+
+    // The selected role tab must match the account's real role.
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+    if (!prof) {
+      await supabase.auth.signOut();
+      throw new Error('No profile found for this account.');
+    }
+    const realRole = (prof as Profile).role;
+    if (realRole !== role) {
+      await supabase.auth.signOut();
+      throw new Error(
+        `This account is registered as ${ROLE_LABEL[realRole]}. Switch to that tab and sign in again.`
+      );
+    }
+  }, []);
+
+  const signInCenter = useCallback(async (code: string, password: string) => {
+    const email = centerEmail(code);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error('Invalid center code or password.');
+
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+    if (!prof || (prof as Profile).role !== 'invigilator') {
+      await supabase.auth.signOut();
+      throw new Error('This is not a center login.');
+    }
+  }, []);
+
+  const signUp = useCallback(
+    async (role: Role, fullName: string, email: string, password: string) => {
+      // The server creates the account pre-confirmed via the admin API,
+      // so no confirmation email is sent (immune to the mailer rate limit).
+      await signUpUser(role, fullName.trim(), email.trim(), password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw new Error(error.message);
+      // Session is live; RootNavigator switches to the role's app.
+    },
+    []
+  );
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{ session, profile, loading, signIn, signInCenter, signUp, signOut }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  return ctx;
+}

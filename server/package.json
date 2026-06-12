@@ -1,0 +1,19 @@
+{
+  "name": "secureaiexam-crypto-service",
+  "version": "1.0.0",
+  "description": "Key ceremony, sealing and forensics service for SecureAIExam",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
