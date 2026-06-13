@@ -46,7 +46,7 @@ pip install -r requirements.txt
 # Optional — enables Claude-powered PDF parsing (hybrid). Without it,
 # the service uses its built-in offline rule-based parser automatically.
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
 This service now does three things: per-copy fingerprinting, custody anomaly scoring, **and** NLP question extraction from uploaded PDFs (`POST /extract/questions`).

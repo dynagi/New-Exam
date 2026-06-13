@@ -128,7 +128,7 @@ export default function InvigilatorScanScreen() {
                 style={StyleSheet.absoluteFill}
                 facing="back"
                 barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-                onBarcodeScanned={busy ? undefined : ({ data }) => handleScan(data)}
+                onBarcodeScanned={({ data }) => handleScan(data)}
               />
             ) : (
               <View style={styles.cameraPaused}>

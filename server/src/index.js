@@ -20,7 +20,7 @@ const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
   SERVER_SECRET,
-  AI_SERVICE_URL = 'http://127.0.0.1:8000',
+  AI_SERVICE_URL = 'http://127.0.0.1:8080',
   PORT = 4000,
   // Minutes before a center's start time at which unscanned copies are flagged.
   RECONCILE_WINDOW_MIN = 20,

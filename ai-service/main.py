@@ -14,7 +14,7 @@ frequency-domain (DCT/DWT) watermarking. The *architecture* — unique
 invisible identity per copy, extracted from a leaked image and mapped to
 a custody chain — is identical.
 
-Run:  uvicorn main:app --host 0.0.0.0 --port 8000
+Run:  uvicorn main:app --host 0.0.0.0 --port 8080
 """
 import base64
 import hashlib
@@ -458,3 +458,10 @@ def anomaly_check(req: AnomalyRequest):
         score = max(score, 0.2)
 
     return {"score": round(score, 2), "flags": flags, "events_analyzed": len(req.events)}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", "8080"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
