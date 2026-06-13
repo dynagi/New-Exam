@@ -97,6 +97,7 @@ export interface ExamCenter {
   name: string;
   code: string;
   starts_at: string;
+  capacity: number;
   reconciled_at: string | null;
   auth_user_id: string | null;
   created_by: string | null;

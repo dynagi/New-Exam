@@ -73,6 +73,7 @@ export const provisionCenter = (body: {
   name: string;
   code: string;
   password: string;
+  capacity?: number;
 }) =>
   post('/api/centers', body) as Promise<{
     ok: boolean;

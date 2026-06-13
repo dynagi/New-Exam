@@ -323,6 +323,71 @@ export function ExamPicker({
   );
 }
 
+/**
+ * Numeric stepper with − / + buttons (and a typable middle field). Used for
+ * counts like center seat capacity and copy allocation. Clamps to [min, max].
+ */
+export function Stepper({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 100000,
+  step = 1,
+  suffix,
+}: {
+  label?: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+}) {
+  const { colors, styles } = useStyles();
+  const clamp = (n: number) => Math.max(min, Math.min(max, n));
+  const set = (n: number) => onChange(clamp(Number.isFinite(n) ? Math.trunc(n) : min));
+  return (
+    <View style={{ marginBottom: spacing.md }}>
+      {label ? <Text style={styles.inputLabel}>{label}</Text> : null}
+      <View style={styles.stepperRow}>
+        <Pressable
+          onPress={() => set(value - step)}
+          disabled={value <= min}
+          hitSlop={6}
+          style={({ pressed }) => [
+            styles.stepperBtn,
+            { opacity: value <= min ? 0.4 : pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Ionicons name="remove" size={22} color={colors.text} />
+        </Pressable>
+        <View style={styles.stepperValueWrap}>
+          <TextInput
+            value={String(value)}
+            onChangeText={(t) => set(parseInt(t.replace(/[^0-9]/g, ''), 10))}
+            keyboardType="number-pad"
+            style={styles.stepperValue}
+            selectTextOnFocus
+          />
+          {suffix ? <Text style={styles.stepperSuffix}>{suffix}</Text> : null}
+        </View>
+        <Pressable
+          onPress={() => set(value + step)}
+          disabled={value >= max}
+          hitSlop={6}
+          style={({ pressed }) => [
+            styles.stepperBtn,
+            { opacity: value >= max ? 0.4 : pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Ionicons name="add" size={22} color={colors.text} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 export function Badge({ status }: { status: string }) {
   const { colors, styles } = useStyles();
   const tone = toneFor(colors, status);
@@ -683,6 +748,46 @@ const makeStyles = (colors: ThemeColors) =>
     },
     examTextActive: {
       color: colors.onAccent,
+    },
+    stepperRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    stepperBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+      backgroundColor: colors.surfaceAlt,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stepperValueWrap: {
+      flex: 1,
+      height: 48,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceAlt,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    stepperValue: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '800',
+      textAlign: 'center',
+      minWidth: 40,
+      paddingVertical: 0,
+    },
+    stepperSuffix: {
+      color: colors.textDim,
+      fontSize: 13,
+      fontWeight: '600',
     },
     badge: {
       flexDirection: 'row',

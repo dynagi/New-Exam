@@ -559,8 +559,9 @@ app.post('/api/forensics/identify', requireRole('admin'), async (req, res, next)
  */
 app.post('/api/centers', requireRole('admin'), async (req, res, next) => {
   try {
-    const { examId, slotId, name, code, password } = req.body || {};
+    const { examId, slotId, name, code, password, capacity } = req.body || {};
     if (!examId) return res.status(400).json({ error: 'examId is required' });
+    const seats = Math.max(0, Math.min(100000, Math.trunc(Number(capacity) || 0)));
     if (!name || String(name).trim().length < 2)
       return res.status(400).json({ error: 'Center name is required' });
     if (!code || !/^[A-Za-z0-9][A-Za-z0-9 \-_/]*$/.test(String(code).trim()))
@@ -602,6 +603,7 @@ app.post('/api/centers', requireRole('admin'), async (req, res, next) => {
         name: String(name).trim(),
         code: String(code).trim().toUpperCase(),
         starts_at: startsAt,
+        capacity: seats,
         auth_user_id: created.user.id,
         created_by: req.user.id,
       })

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, EmptyState, ExamPicker, Input, Screen, SectionTitle } from '../../components/UI';
+import { Button, Card, EmptyState, ExamPicker, Input, Screen, SectionTitle, Stepper } from '../../components/UI';
 import { useTheme } from '../../context/ThemeContext';
 import { showAlert } from '../../lib/alert';
 import { allocateCopies, provisionCenter, scanCopy } from '../../lib/api';
@@ -38,6 +38,7 @@ export default function CentersScreen() {
   const [cCode, setCCode] = useState('');
   const [cPassword, setCPassword] = useState('');
   const [cSlotId, setCSlotId] = useState<string | null>(null);
+  const [cCapacity, setCCapacity] = useState(30);
   const [busy, setBusy] = useState(false);
 
   // Allocate + scan modals
@@ -105,6 +106,7 @@ export default function CentersScreen() {
     setCCode('');
     setCPassword('');
     setCSlotId(slots[0]?.id ?? null);
+    setCCapacity(30);
     setCreating(true);
   };
 
@@ -123,6 +125,7 @@ export default function CentersScreen() {
         name: cName.trim(),
         code: cCode.trim(),
         password: cPassword,
+        capacity: cCapacity,
       });
       setCreating(false);
       showAlert(
@@ -218,7 +221,10 @@ export default function CentersScreen() {
                       <Text style={styles.centerName}>
                         {center.name} <Text style={styles.code}>({center.code})</Text>
                       </Text>
-                      <Text style={styles.dim}>Starts {fmtDateTime(center.starts_at)}</Text>
+                      <Text style={styles.dim}>
+                        Starts {fmtDateTime(center.starts_at)}
+                        {center.capacity ? ` · ${center.capacity} seats` : ''}
+                      </Text>
                     </View>
                     {center.reconciled_at ? (
                       <View style={[styles.tag, { backgroundColor: `${colors.warning}22` }]}>
@@ -275,6 +281,19 @@ export default function CentersScreen() {
               <Input label="Center name" placeholder="e.g. Govt. Sr. Sec. School, Sector 12" value={cName} onChangeText={setCName} />
               <Input label="Center code (login id)" placeholder="e.g. DL-014" value={cCode} onChangeText={setCCode} autoCapitalize="characters" />
               <Input label="Center password" placeholder="min 6 chars" value={cPassword} onChangeText={setCPassword} secureTextEntry />
+
+              <Stepper
+                label="Seats / capacity"
+                value={cCapacity}
+                onChange={setCCapacity}
+                min={0}
+                max={5000}
+                step={5}
+                suffix="seats"
+              />
+              <Text style={styles.capacityHint}>
+                How many candidates this center seats. Guides how many copies to allocate.
+              </Text>
 
               <Text style={styles.fieldLabel}>Slot</Text>
               {slots.length === 0 ? (
@@ -377,6 +396,7 @@ const makeStyles = (colors: ThemeColors) =>
     centerActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
     flexBtn: { flex: 1 },
     fieldLabel: { color: colors.textDim, fontSize: 13, fontWeight: '600', marginTop: spacing.sm, marginBottom: spacing.sm },
+    capacityHint: { color: colors.textFaint, fontSize: 12, marginTop: -spacing.sm, marginBottom: spacing.sm, lineHeight: 17 },
     noSlots: { color: colors.warning, fontSize: 12, marginBottom: spacing.sm },
     slotOption: {
       flexDirection: 'row',
