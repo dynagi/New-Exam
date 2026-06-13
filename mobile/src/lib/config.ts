@@ -45,14 +45,24 @@ function lanHostFromBundle(): string | null {
  */
 const LAN_HOST_OVERRIDE = '192.168.1.102';
 
+/**
+ * Full URL override — use when the phone is NOT on the same Wi-Fi as the PC.
+ * Expose the crypto server with a public tunnel and paste its URL here, e.g.
+ *   cloudflared tunnel --url http://localhost:4000
+ *   -> 'https://something-random.trycloudflare.com'
+ * When set, this wins over everything below. Leave '' for the LAN/emulator path.
+ */
+const CRYPTO_SERVER_URL_OVERRIDE = '';
+
 const lanHost = Platform.OS === 'web' ? null : LAN_HOST_OVERRIDE || lanHostFromBundle();
 // Emulator/simulator fallbacks when no LAN IP is available.
 const fallback = Platform.OS === 'ios' ? '127.0.0.1' : '10.0.2.2';
 
 export const CRYPTO_SERVER_URL =
-  Platform.OS === 'web'
+  CRYPTO_SERVER_URL_OVERRIDE ||
+  (Platform.OS === 'web'
     ? `http://localhost:${CRYPTO_PORT}`
-    : `http://${lanHost ?? fallback}:${CRYPTO_PORT}`;
+    : `http://${lanHost ?? fallback}:${CRYPTO_PORT}`);
 
 export const IS_CONFIGURED = !SUPABASE_URL.includes('YOUR-PROJECT');
 
