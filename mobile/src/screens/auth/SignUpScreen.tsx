@@ -12,10 +12,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Aurora } from '../../components/Aurora';
+import GradientText from '../../components/GradientText';
 import { Button, Input, RolePicker, ThemeToggle } from '../../components/UI';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { radius, spacing, ThemeColors } from '../../lib/theme';
+import { gradients, radius, spacing, ThemeColors } from '../../lib/theme';
 import { Role } from '../../lib/types';
 import type { AuthStackParamList } from '../../navigation/RootNavigator';
 
@@ -51,6 +53,7 @@ export default function SignUpScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Aurora />
       <View style={styles.topBar}>
         <ThemeToggle />
       </View>
@@ -59,7 +62,7 @@ export default function SignUpScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Create account</Text>
+          <GradientText colors={gradients.brand} style={styles.title}>Create account</GradientText>
           <Text style={styles.subtitle}>Choose the role this account will hold.</Text>
 
           <RolePicker value={role} onChange={setRole} />

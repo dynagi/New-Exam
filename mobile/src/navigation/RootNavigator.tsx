@@ -7,12 +7,14 @@ import {
   Theme,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useMemo } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { ActivityIndicator, Animated, Platform, StyleSheet, View } from 'react-native';
 import { HeaderActions } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { ThemeColors } from '../lib/theme';
+import { gradients, ThemeColors } from '../lib/theme';
 
 import CenterLoginScreen from '../screens/auth/CenterLoginScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -46,9 +48,57 @@ export type AuthStackParamList = {
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator();
 
+function TabIcon({
+  name,
+  focused,
+  color,
+  size,
+}: {
+  name: keyof typeof Ionicons.glyphMap;
+  focused: boolean;
+  color: string;
+  size: number;
+}) {
+  const s = useRef(new Animated.Value(focused ? 1 : 0)).current;
+  useEffect(() => {
+    Animated.spring(s, { toValue: focused ? 1 : 0, useNativeDriver: true, speed: 20, bounciness: 9 }).start();
+  }, [focused, s]);
+  const scale = s.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
+  const translateY = s.interpolate({ inputRange: [0, 1], outputRange: [0, -2] });
+  const glowOpacity = s.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+  const glowScale = s.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] });
+  const pill = size + 18;
+  return (
+    <Animated.View
+      style={{ alignItems: 'center', justifyContent: 'center', transform: [{ scale }, { translateY }] }}
+    >
+      {/* Highlighted halo behind the active icon. */}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          width: pill,
+          height: pill,
+          borderRadius: pill / 2,
+          opacity: glowOpacity,
+          transform: [{ scale: glowScale }],
+        }}
+      >
+        <LinearGradient
+          colors={gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[StyleSheet.absoluteFill, { borderRadius: pill / 2, opacity: 0.22 }]}
+        />
+      </Animated.View>
+      <Ionicons name={name} color={color} size={size} />
+    </Animated.View>
+  );
+}
+
 function icon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ color, size }: { color: string; size: number }) => (
-    <Ionicons name={name} color={color} size={size} />
+  return ({ focused, color, size }: { focused: boolean; color: string; size: number }) => (
+    <TabIcon name={name} focused={focused} color={color} size={size} />
   );
 }
 
@@ -61,10 +111,21 @@ function useTabScreenOptions() {
       headerTintColor: colors.text,
       headerShadowVisible: false,
       headerRight: () => <HeaderActions />,
+      // Seamless cross-fade/shift when switching tabs.
+      animation: 'shift' as const,
+      // Frosted-glass tab bar: a translucent fill over a real blur layer.
+      tabBarBackground: () => (
+        <BlurView
+          intensity={Platform.OS === 'android' ? 24 : 40}
+          tint={colors.blurTint}
+          style={StyleSheet.absoluteFill}
+        />
+      ),
       tabBarStyle: {
-        backgroundColor: colors.surface,
-        borderTopColor: colors.border,
+        backgroundColor: colors.glass,
+        borderTopColor: colors.glassBorder,
         paddingTop: 4,
+        elevation: 0,
       },
       tabBarActiveTintColor: colors.primary,
       tabBarInactiveTintColor: colors.textDim,
@@ -216,7 +277,11 @@ export default function RootNavigator() {
     <NavigationContainer theme={navTheme}>
       {!session || !profile ? (
         <AuthStack.Navigator
-          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+            animation: 'fade',
+          }}
         >
           <AuthStack.Screen name="Login" component={LoginScreen} />
           <AuthStack.Screen name="SignUp" component={SignUpScreen} />

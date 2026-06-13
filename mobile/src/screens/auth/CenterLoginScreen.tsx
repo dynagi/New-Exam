@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Aurora } from '../../components/Aurora';
+import GradientText from '../../components/GradientText';
 import { Button, Input, ThemeToggle } from '../../components/UI';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -40,6 +42,7 @@ export default function CenterLoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Aurora />
       <View style={styles.topBar}>
         <ThemeToggle />
       </View>
@@ -49,7 +52,7 @@ export default function CenterLoginScreen() {
             <LinearGradient colors={gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.logoBadge}>
               <Ionicons name="qr-code" size={32} color="#fff" />
             </LinearGradient>
-            <Text style={styles.title}>Center Login</Text>
+            <GradientText colors={gradients.brand} style={styles.title}>Center Login</GradientText>
             <Text style={styles.subtitle}>
               Invigilator scan-in. Use the center code and password issued by the Admin.
             </Text>

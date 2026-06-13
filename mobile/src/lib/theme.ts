@@ -30,6 +30,13 @@ export interface ThemeColors {
   onAccent: string;
   /** Backdrop for modals. */
   backdrop: string;
+  /** Glassmorphism: translucent surface + hairline highlight border. */
+  glass: string;
+  glassBorder: string;
+  /** Blur tint for expo-blur ('light' | 'dark' | 'default'). */
+  blurTint: 'light' | 'dark' | 'default';
+  /** Three soft blobs that paint the animated mesh/aurora background. */
+  mesh: readonly [string, string, string];
 }
 
 export const darkColors: ThemeColors = {
@@ -53,7 +60,11 @@ export const darkColors: ThemeColors = {
   info: '#38BDF8',
   gold: '#FBBF24',
   onAccent: '#FFFFFF',
-  backdrop: 'rgba(2, 6, 14, 0.88)',
+  backdrop: 'rgba(2, 6, 14, 0.72)',
+  glass: 'rgba(20, 31, 54, 0.55)',
+  glassBorder: 'rgba(146, 180, 255, 0.16)',
+  blurTint: 'dark',
+  mesh: ['rgba(91,141,248,0.30)', 'rgba(139,92,246,0.26)', 'rgba(34,211,238,0.22)'],
 };
 
 export const lightColors: ThemeColors = {
@@ -77,7 +88,11 @@ export const lightColors: ThemeColors = {
   info: '#0284C7',
   gold: '#D97706',
   onAccent: '#FFFFFF',
-  backdrop: 'rgba(15, 27, 51, 0.45)',
+  backdrop: 'rgba(15, 27, 51, 0.35)',
+  glass: 'rgba(255, 255, 255, 0.62)',
+  glassBorder: 'rgba(255, 255, 255, 0.7)',
+  blurTint: 'light',
+  mesh: ['rgba(47,107,246,0.18)', 'rgba(124,58,237,0.16)', 'rgba(14,165,196,0.14)'],
 };
 
 export type ThemeMode = 'light' | 'dark';
