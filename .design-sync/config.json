@@ -1,0 +1,9 @@
+{
+  "projectId": "bd5a6cf4-b73a-404f-8f45-cc5149a1bcfd",
+  "shape": "tokens-only",
+  "scope": "tokens",
+  "note": "Repo is a React Native / Expo app (mobile/), not a DOM component library. Components depend on react-native primitives + native Expo modules (expo-blur, expo-linear-gradient, @expo/vector-icons) and app providers (AuthContext, ThemeContext), so they cannot render in claude.ai/design. User scoped this sync to tokens/theme only, sourced from mobile/src/lib/theme.ts.",
+  "tokensSource": "mobile/src/lib/theme.ts",
+  "readmeHeader": ".design-sync/conventions.md",
+  "localDir": "./ds-bundle"
+}
