@@ -37,7 +37,15 @@ function lanHostFromBundle(): string | null {
   return host;
 }
 
-const lanHost = Platform.OS === 'web' ? null : lanHostFromBundle();
+/**
+ * Pin your PC's LAN IP here when scanning from a PHYSICAL phone. This wins over
+ * auto-detection (use it when the bundle host is a tunnel/USB/localhost, which
+ * a real phone can't reach). Find it with `ipconfig` → IPv4 of your Wi-Fi.
+ * Set to '' to fall back to auto-detection.
+ */
+const LAN_HOST_OVERRIDE = '192.168.1.102';
+
+const lanHost = Platform.OS === 'web' ? null : LAN_HOST_OVERRIDE || lanHostFromBundle();
 // Emulator/simulator fallbacks when no LAN IP is available.
 const fallback = Platform.OS === 'ios' ? '127.0.0.1' : '10.0.2.2';
 
